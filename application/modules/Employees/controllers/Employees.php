@@ -16,6 +16,7 @@ class Employees extends MY_Controller {
 		$data['positions']	= $this->employee->getPositions();
 		$data['schedules']	= $this->employee->getSchedules();
 		$data['employees']	= $this->employee->get();
+		$data['deductions'] = $this->deduction->get();
 		$data['page'] = 'Employee';
 		$data['section'] = 'List';
 		$data['content_view'] = 'Employees/index';
@@ -196,7 +197,7 @@ class Employees extends MY_Controller {
 	}
 
 
-	public function settings($month, $year)
+	public function settings($employee, $month, $year)
 	{
 
 
@@ -205,37 +206,100 @@ class Employees extends MY_Controller {
 
 		foreach($settings as $set)
 			{
-
 				$data = array(
-					'did' => $set->id,
 					'description' => $set->description,
-					'amount' => $set->amount,
-					'month' => $month,
-					'year' => $year,
 					'status' => $set->status,
-					'date' => date('Y-m-d H:i:s')
 							);
-		  $check = $this->deduction->checksettings($set->id);
+		  $check = $this->deduction->checksettings($employee, $set->id,$month, $year);
+				$deduction =	getLastDeduction($set->id,$employee);
 			//var_dump($check);die;
-			if(!$check):
-			$add = $this->deduction->createsettings($data);
-			else :
-				$add = $this->deduction->updatesettings($set->id, $data);
+			if($check):
+			$this->deduction->updatesettings($check->id, $data);
+		elseif(!$check && $set->status == '1' && $deduction):
+
+		$data = array(
+			 'did' => $deduction->did,
+			 'employee' => $employee,
+			 'amount' => $deduction->amount,
+			 'year' => $year,
+			 'month' => $month,
+			 'description' => $set->description,
+			 'status' => $set->status,
+			 'date' => date('Y-m-d H:i:s')
+		 );
+		$this->deduction->createsettings($data);
 			endif;
 			}
-			$month = date('F',strtotime($month));
-			if($add){
+
 				return true;
-				// $this->session->set_flashdata('success', 'Deduction settings have successfully been created for the month of '.$month);
-			  //  redirect('payroll');
-			}else {
-				return false;
-			 // $this->session->set_flashdata('error', 'Failed to add deduction settings for the month of '.$month);
-			 // $this->deduct();
-			}
+
 		else:
 			return false;
 		endif;
+		}
+
+
+
+		public function addDeductions($id)
+		{
+
+		   $this->form_validation->set_rules('period', 'Period', 'trim|required');
+			 if ($this->form_validation->run() == FALSE) {
+				 $response=array('msg'=> validation_errors());
+ 		 		echo json_encode($response);
+ 		 		die();
+			}else {
+				$deduction = $this->input->post('deduction');
+				$amount = $this->input->post('amount');
+				$period = $this->input->post('period');
+			  $month = date('m', strtotime($period));
+				$year = date('Y', strtotime($period));
+
+				for($count = 0; $count < count($deduction); $count++)
+				{
+					if(!empty($deduction[$count]) && empty($amount[$count])){
+						$response=array('msg'=> 'Amount is not supposed to be empty for all selected deduductions. Check if all selected values are not empty');
+						echo json_encode($response);
+						die();
+					}
+					if(!empty($deduction[$count])):
+					  $check = $this->deduction->checksettings($id, $deduction[$count], $month, $year);
+						$data = array(
+							'did' => $deduction[$count],
+							'employee' => $id,
+							'amount' => $amount[$count],
+							'year' => $year,
+							'month' => $month,
+							'status' => 1,
+							'date' => date('Y-m-d H:i:s')
+						);
+					//	var_dump($check);die;
+						if(!$check){
+					$create = $this->deduction->createsettings($data);
+				}else{
+						$create = $this->deduction->updatesettings($check->id, $data);
+				}
+			else:
+				$response=array('msg'=> 'Please select at least one option to add deduction to employee');
+				echo json_encode($response);
+				die();
+			 endif;
+				}
+     if (isset($create) && $create == TRUE) {
+				$response=array('msg'=> 'YES', 'month'=>$month, 'year'=>$year);
+				echo json_encode($response);
+				die();
+     }else {
+
+				$response=array('msg'=> 'NO');
+				echo json_encode($response);
+				die();
+     }
+
+
+			}
+
+
 		}
 
 	public function workschedules()

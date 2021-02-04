@@ -9,8 +9,7 @@
                 <table id="example1" class="table table-bordered table-striped">
                   <thead>
                   <tr>
-                    <th>Description</th>
-                    <th>Amount</th>
+                    <th>Name</th>
                     <th>Status</th>
                     <th>Actions</th>
                   </tr>
@@ -26,7 +25,6 @@
                       ?>
                   <tr>
                     <td><?php echo $deduction->description; ?></td>
-                    <td><?php echo $deduction->amount; ?></td>
                     <td><?=$status; ?></td>
                     <td>
                       <a href="" class="btn btn-info btn-xs" data-toggle="modal" data-target="#editposition<?php echo $deduction->id; ?>"> <i class="fas fa-edit"></i>Edit </a>
@@ -41,7 +39,7 @@
            <div class="modal-dialog modal-lg">
              <div class="modal-content">
                <div class="modal-header">
-                 <h4 class="modal-title">Edit Description</h4>
+                 <h4 class="modal-title">Edit Name</h4>
                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                    <span aria-hidden="true">&times;</span>
                  </button>
@@ -53,10 +51,6 @@
                    <div class="form-group">
                          <label for="">Description</label>
                          <input type="text" class="form-control" name="description" value="<?php echo $deduction->description; ?>">
-                       </div>
-                       <div class="form-group">
-                         <label for="">Rate</label>
-                         <input type="text" class="form-control" name="amount" value="<?php echo $deduction->amount; ?>">
                        </div>
                    </div>
                    <!-- /.card-body -->
@@ -117,7 +111,7 @@
               </div>
               <!-- /.card-body -->
             </div>
-
+</div>
             <!-- /.card -->
             <div class="modal fade" id="adddeduction">
             <div class="modal-dialog modal-lg">
@@ -130,20 +124,16 @@
             <div class="card-body">
             <div id="alert-msg"></div>
             <div class="form-group">
-            <label for="exampleInputDescription1">Description</label>
+            <label for="exampleInputDescription1">Name</label>
             <input type="text" class="form-control" name="description" id="exampleInputDescription1" placeholder="Enter Description">
             </div>
-            <div class="form-group">
-            <label for="exampleInputAmount1">Amount</label>
-            <input type="text" class="form-control" name="amount" id="exampleInputAmount1" placeholder="Enter Amount">
-            </div>
+
             </div>
             <!-- /.card-body -->
             </div>
             <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            <button type="button" id="createDeduction" class="btn btn-primary">Save changes</button>
-            </div>
+            <button type="button" id="Deduct" class="btn btn-primary">Save changes</button>
             </div>
             </form>
             </div>
@@ -152,3 +142,34 @@
             <!-- /.modal-dialog -->
             </div>
             <!-- /.modal -->
+
+
+
+            <script type="text/javascript">
+            $('#Deduct').click(function() {
+            var posturl = "<?php echo base_url('newdeduct'); ?>";
+           var form_data = $('#DeductionForm').serialize();
+                $.ajax({
+                    url: posturl,
+                    type: 'POST',
+                    data: form_data,
+                    dataType:"Json",
+                    success: function(data) {
+                        if (data.msg == 'YES'){
+                            $('#alert-msg').html('<div class="alert alert-success text-center">New deduction successfully added!</div>');
+
+                            window.location.href ="<?php echo base_url('deductions'); ?>";
+
+                        }
+                        else if(data.msg == 'NO'){
+                            $('#alert-msg').html('<div class="alert alert-danger text-center">Error while adding new deduction! Please try again later.</div>');
+                        }
+                        else{
+                            $('#alert-msg').html('<div class="alert alert-danger">' + data.msg + '</div>');
+                        }
+                    }
+                });
+                return false;
+            });
+
+            </script>

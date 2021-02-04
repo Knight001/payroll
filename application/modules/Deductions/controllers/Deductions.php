@@ -20,8 +20,8 @@ class Deductions extends MY_Controller {
 
 	public function add()
 	{
+		
 		$this->form_validation->set_rules('description', 'Description', 'trim|required|is_unique[deductions.description]');
-		$this->form_validation->set_rules('amount', 'Amount', 'trim|required|is_numeric');
 		if($this->form_validation->run() == FALSE){
 		$response=array('msg'=> validation_errors());
 		echo json_encode($response);
@@ -29,8 +29,8 @@ class Deductions extends MY_Controller {
 		}else{
 			$data = array(
 				'description'=> $this->input->post('description'),
-				'amount' => $this->input->post('amount')
 			);
+
 			$add = $this->deduction->add($data);
 			if($add){
 			$response=array('msg'=> 'YES');
@@ -47,7 +47,6 @@ class Deductions extends MY_Controller {
 	public function edit($id)
 	{
 		$this->form_validation->set_rules('description', 'Description', 'trim|required');
-		$this->form_validation->set_rules('amount', 'Amount', 'trim|required|is_numeric');
 		if($this->form_validation->run() == FALSE){
 		$response=array('msg'=> validation_errors());
 		echo json_encode($response);
@@ -55,7 +54,6 @@ class Deductions extends MY_Controller {
 		}else{
 			$data = array(
 				'description'=> $this->input->post('description'),
-				'amount' => $this->input->post('amount')
 			);
 			$add = $this->deduction->update($id, $data);
 			if($add){

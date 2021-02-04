@@ -78,7 +78,10 @@
                   </tr>
                   </thead>
                   <tbody>
-                    <?php foreach($payrolls as $payroll) : ?>
+                    <?php foreach($payrolls as $payroll) :
+
+
+                       ?>
                   <tr>
                     <td><?php echo $payroll->name; ?></td>
                     <td><?php echo $payroll->employee_id; ?></td>
@@ -88,7 +91,104 @@
                     <td><?php echo $payroll->deductions; ?></td>
                     <td><?php echo $payroll->advance; ?></td>
                     <td><?php echo $payroll->net; ?></td>
-                    <td> <a href="<?php echo base_url('payslip/'.$payroll->employee_id.'?month='.$month.'&year='.$year); ?>" class="btn btn-danger btn-sm"> <i class="fas fa-print"></i>Print Payslip</a> </td>
+                    <td>
+                      <a class="btn btn-primary btn-sm" data-toggle="modal" data-target="#newdeductionsettings<?php echo $payroll->employee_id; ?>"><i class="fas fa-minus-circle"></i>Deductions</a>
+                      <a href="<?php echo base_url('payslip/'.$payroll->employee_id.'?month='.$month.'&year='.$year); ?>" class="btn btn-danger btn-sm"> <i class="fas fa-print"></i>Print Payslip</a>
+                     </td>
+
+                     <div class="modal fade" id="newdeductionsettings<?php echo $payroll->employee_id; ?>">
+     <div class="modal-dialog modal-lg">
+       <div class="modal-content">
+         <div class="modal-header">
+           <h4 class="modal-title">Edit Deductions For <?php echo $payroll->name; ?></h4>
+         </div>
+
+                    <form id="DeductionSettingsForm<?php echo $payroll->employee_id; ?>">
+                    <div class="modal-body">
+                     <div class="card-body">
+                     <div id="d-msg<?php echo $payroll->employee_id; ?>"></div>
+                     <div class="form-group">
+                   <label>Set Period</label>
+                       <input type="text" name="period" id="period<?php echo $payroll->employee_id; ?>" class="form-control monthpicker"/>
+                  </div>
+                     <?php
+                    $count = 1;
+                     foreach($deductions as $deduction) :
+                           $new = getThisDeduction($deduction->id,  $payroll->employee_id);
+                           $last = getLastDeduction($deduction->id,  $payroll->employee_id);
+                           if($new):
+                             $lastmonth = number_format($new->amount, 2);
+                           elseif($last):
+                              $lastmonth = number_format($last->amount, 2);
+                            else:
+                               $lastmonth = '0.00';
+                            endif
+
+                       ?>
+                        <div class="row">
+                          <div class="col-sm-6">
+                           <div class="form-group">
+                             <div class="form-check">
+                               <input class="form-check-input" type="checkbox"  name="deduction[]" value="<?php echo $deduction->id; ?>" checked>
+                               <label class="form-check-label"><?php echo $deduction->description; ?></label>
+                             </div>
+                           </div>
+                          </div>
+                          <div class="col-sm-6">
+                            <div class="form-group">
+                               <label for="">Amount</label>
+                               <input type="text" name="amount[]" value="<?php echo $lastmonth; ?>">
+                            </div>
+                          </div>
+                        </div>
+                     <?php endforeach; ?>
+                     </div>
+                     <!-- /.card-body -->
+
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                    <div class="card-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" id="CreateDeductionsettings<?php echo $payroll->employee_id; ?>" class="btn btn-primary">Save changes</button>
+                     </div>
+                    </div>
+                    </form>
+                    </div>
+                    <!-- /.modal-content -->
+                    </div>
+                    <!-- /.modal-dialog -->
+                    </div>
+
+                  <!-- /.modal -->
+
+  <script type="text/javascript">
+
+                    $('#CreateDeductionsettings<?php echo $payroll->employee_id; ?>').click(function() {
+               var posturl = "<?php echo base_url('addDeductions/'.$payroll->employee_id); ?>";
+              var form_data = $('#DeductionSettingsForm<?php echo $payroll->employee_id; ?>').serialize();
+                   $.ajax({
+                       url: posturl,
+                       type: 'POST',
+                       data: form_data,
+                       dataType:"Json",
+                       success: function(data) {
+                           if (data.msg == 'YES'){
+                               $('#d-msg<?php echo $payroll->employee_id; ?>').html('<div class="alert alert-success text-center">Deductions successfully updated!</div>');
+
+                               window.location.href ="<?php echo base_url(); ?>payroll?month="+data.month+"&year="+data.year;
+
+                           }
+                           else if(data.msg == 'NO'){
+                               $('#d-msg<?php echo $payroll->employee_id; ?>').html('<div class="alert alert-danger text-center">Error while updating deductions! Please try again later.</div>');
+                           }
+                           else{
+                               $('#d-msg<?php echo $payroll->employee_id; ?>').html('<div class="alert alert-danger">' + data.msg + '</div>');
+                           }
+                       }
+                   });
+                   return false;
+               });
+  </script>
                   </tr>
                   <?php endforeach; ?>
                   </tbody>

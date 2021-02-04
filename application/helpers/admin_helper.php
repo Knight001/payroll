@@ -134,3 +134,43 @@ function getallsellectedpositions($ids)
     return false;
   }
 }
+
+
+
+function getThisDeduction($id,$employee)
+{
+  $CI =& get_instance();
+  $CI->load->database();
+  $CI->db->select('*');
+  $CI->db->where('did', $id);
+  $CI->db->where('employee', $employee);
+  $CI->db->where('month', (int)date('m'));
+  $CI->db->where('year', date('Y'));
+    $CI->db->limit(1);
+  $query = $CI->db->get('settings');
+  if($query->num_rows() > 0){
+  return $query->row();
+  }else {
+    return false;
+  }
+}
+
+
+function getLastDeduction($id,$employee)
+{
+  $month = date('m', strtotime('-1 month', time()));
+  $CI =& get_instance();
+  $CI->load->database();
+  $CI->db->select('*');
+  $CI->db->where('did', $id);
+  $CI->db->where('employee', $employee);
+  $CI->db->where('month', (int)$month);
+  $CI->db->where('year', date('Y'));
+  $CI->db->limit(1);
+  $query = $CI->db->get('settings');
+  if($query->num_rows() > 0){
+  return $query->row();
+  }else {
+    return false;
+  }
+}

@@ -17,8 +17,8 @@ class Payrolls extends MY_Controller {
         $month = $this->input->get('month') != NULL ? $this->input->get('month') : "";
 
          $data['payee'] = $this->payroll->getpayee();
-		$data['deductions'] = $this->deduction->get();
-		$data['settings'] = $this->deduction->getPayrollSettings($month, $year);
+	     	$data['deductions'] = $this->deduction->get();
+		//$data['settings'] = $this->deduction->getPayrollSettings($month, $year);
 		$data['overtimes'] = $this->employee->getUnpaidOvertime();
         $data['earnings'] = $this->payroll->getearnings();
         $data['payrolls'] = $this->payroll->get($month, $year);
@@ -34,7 +34,7 @@ class Payrolls extends MY_Controller {
 
         $year = $this->input->get('year') != NULL ? $this->input->get('year') : "" ;
         $month = $this->input->get('month') != NULL ? $this->input->get('month') : "";
-        $data['deductions'] = $this->deduction->getPayrollSettings($month,$year);
+        $data['deductions'] = $this->deduction->getPayrollSettings($id,$month,$year);
         $data['employee'] = $this->payroll->getEmployee($id);
 		$data['page'] = 'Employee';
 		$data['section'] = 'Payslip';
@@ -45,7 +45,6 @@ class Payrolls extends MY_Controller {
 	{
         $year = $this->input->get('year') != NULL ? $this->input->get('year') : "" ;
         $month = $this->input->get('month') != NULL ? $this->input->get('month') : "";
-        $data['deductions'] = $this->deduction->getPayrollSettings($month,$year);
         $data['employees'] = $this->employee->get();
 		$data['page'] = 'Employee';
 		$data['section'] = 'Payslip';
@@ -168,21 +167,24 @@ class Payrolls extends MY_Controller {
 			 die();
 		 }else {
 			 $date = $this->input->post('period');
-			 $month = date('m', strtotime($date));
+			 $month =(int)date('m', strtotime($date));
 			 $year = date('Y', strtotime($date));
 
      $this->earningsettings($month, $year);
      $this->payesettings($month, $year);
-		 $this->employees->settings($month, $year);
+		 //$this->employees->settings($month, $year);
 
-    $deductions = $this->payroll->getDeductions($month, $year);
 
-        //var_dump($deductions); die;
+
       $employees = $this->employee->get();
 
       foreach ($employees as $employee) {
-          $check = $this->payroll->check($employee->employee_id);
+          $check = $this->payroll->check($employee->employee_id, $month, $year);
           $earning = getIndividualEarning($employee->employee_id);
+				   $deductions = $this->payroll->getDeductions($employee->employee_id,$month, $year);
+					// var_dump($check);
+					 $this->employees->settings($employee->employee_id,$month, $year);
+					 	 //$this->employees->settings($employee->employee_id,$month, $year);
           //var_dump($earning);die;
           $taxable = 0;
           $en = 0;
@@ -202,6 +204,8 @@ class Payrolls extends MY_Controller {
           $deducted =$deductions+$paycal+$advance;
           $earned = $employee->salary+$overtime+$earnings+$en;
           $net = $earned-$deducted;
+
+
 				//	 var_dump($employee->employee_id,$earnings);die;
           if(!$check):
         $data = array(
@@ -214,7 +218,8 @@ class Payrolls extends MY_Controller {
             'year' => $year,
             'created' => date('Y-m-d H:i:s')
         );
-        $create = $this->payroll->create($data);
+
+       $create = $this->payroll->create($data);
     else:
         $data = array(
             'position' => $employee->position_id,
@@ -222,9 +227,12 @@ class Payrolls extends MY_Controller {
             'deductions' => $deducted,
             'net' => $net,
         );
+
      $create = $this->payroll->updatepayroll($check->pid, $data);
+
     endif;
       }
+		
       if($create){
 				$response=array('msg'=> 'YES');
 				echo json_encode($response);

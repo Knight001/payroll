@@ -277,7 +277,7 @@
 
 <script>
         $('#createUser').click(function() {
-                  var posturl = "adduser";
+                  var posturl = "<?php echo base_url('adduser'); ?>";
                  var form_data = $('#addForm').serialize();
                       $.ajax({
                           url: posturl,
@@ -324,7 +324,7 @@
                       return false;
                   });
                   $('#createRole').click(function() {
-                  var posturl = "addrole";
+                  var posturl = "<?php echo base_url('addrole'); ?>";
                  var form_data = $('#addRoleForm').serialize();
                       $.ajax({
                           url: posturl,
@@ -349,7 +349,7 @@
                       return false;
                   });
                   $('#createEmployee').click(function() {
-                  var posturl = "addemployee";
+                  var posturl = "<?php echo base_url('addemployee'); ?>";
                  var form_data = $('#EmployeeForm').serialize();
                       $.ajax({
                           url: posturl,
@@ -373,31 +373,7 @@
                       });
                       return false;
                   });
-                  $('#createDeduction').click(function() {
-                  var posturl = "deduct";
-                 var form_data = $('#DeductionForm').serialize();
-                      $.ajax({
-                          url: posturl,
-                          type: 'POST',
-                          data: form_data,
-                          dataType:"Json",
-                          success: function(data) {
-                              if (data.msg == 'YES'){
-                                  $('#alert-msg').html('<div class="alert alert-success text-center">New deduction successfully added!</div>');
-
-                                  window.location.href ="deductions";
-
-                              }
-                              else if(data.msg == 'NO'){
-                                  $('#alert-msg').html('<div class="alert alert-danger text-center">Error while adding new deduction! Please try again later.</div>');
-                              }
-                              else{
-                                  $('#alert-msg').html('<div class="alert alert-danger">' + data.msg + '</div>');
-                              }
-                          }
-                      });
-                      return false;
-                  });
+          
 
   $(function () {
     $('.select2').select2()

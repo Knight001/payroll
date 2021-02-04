@@ -27,6 +27,7 @@
                     <td><?php echo $employee->schedule; ?></td>
                     <td><?php echo $employee->created_on; ?></td>
                     <td>
+                      <a class="btn btn-primary btn-sm" data-toggle="modal" data-target="#newdeductionsettings<?php echo $employee->employee_id; ?>"><i class="fas fa-minus-circle"></i>Deductions</a>
                     <a href="<?php echo base_url('earn/'.$employee->employee_id); ?>" class="btn btn-primary btn-sm"><i class="fas fa-cart-plus"></i>Earnings</a>
                      <a href="" class="btn btn-info"  data-toggle="modal" data-target="#edit<?php echo $employee->employee_id; ?>"> <i class="fas fa-edit"></i> Edit</a> </td>
                     <div class="modal fade" id="edit<?php echo $employee->employee_id; ?>">
@@ -183,7 +184,6 @@
               <button type="button" id="editEmployee<?php echo $employee->employee_id; ?>" class="btn btn-primary">Save changes</button>
 
             </div>
-          </div>
         </form>
       </div>
       <!-- /.modal-content -->
@@ -191,8 +191,100 @@
     <!-- /.modal-dialog -->
   </div>
   <!-- /.modal -->
+  <div class="modal fade" id="newdeductionsettings<?php echo $employee->employee_id; ?>">
+  <div class="modal-dialog modal-lg">
+  <div class="modal-content">
+  <div class="modal-header">
+  <h4 class="modal-title">Deductions For <?php echo $employee->firstname." ".$employee->lastname; ?></h4>
+  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+   <span aria-hidden="true">&times;</span>
+  </button>
+  </div>
+  <form id="DeductionSettingsForm<?php echo $employee->employee_id; ?>">
+  <div class="modal-body">
+   <div class="card-body">
+   <div id="d-msg<?php echo $employee->employee_id; ?>"></div>
+   <div class="form-group">
+ <label>Set Period</label>
+     <input type="text" name="period" id="period<?php echo $employee->employee_id; ?>" class="form-control monthpicker"/>
+</div>
+   <?php
+  $count = 1;
+   foreach($deductions as $deduction) :
+         $new = getThisDeduction($deduction->id,  $employee->employee_id);
+         $last = getLastDeduction($deduction->id,  $employee->employee_id);
+         if($new):
+           $lastmonth = number_format($new->amount, 2);
+         elseif($last):
+            $lastmonth = number_format($last->amount, 2);
+          else:
+             $lastmonth = '0.00';
+          endif
+
+     ?>
+      <div class="row">
+        <div class="col-sm-6">
+         <div class="form-group">
+           <div class="form-check">
+             <input class="form-check-input" type="checkbox"  name="deduction[]" value="<?php echo $deduction->id; ?>" checked>
+             <label class="form-check-label"><?php echo $deduction->description; ?></label>
+           </div>
+         </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="form-group">
+             <label for="">Amount</label>
+             <input type="text" name="amount[]" value="<?php echo isset($lastmonth) ? $lastmonth : ''; ?>">
+          </div>
+        </div>
+      </div>
+   <?php endforeach; ?>
+   </div>
+   <!-- /.card-body -->
+
+  </div>
+  <div class="modal-footer justify-content-between">
+  <div class="card-footer">
+  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+  <button type="button" id="CreateDeductionsettings<?php echo $employee->employee_id; ?>" class="btn btn-primary">Save changes</button>
+   </div>
+  </div>
+  </form>
+  </div>
+  <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+  </div>
+
+<!-- /.modal -->
                   </tr>
                   <script>
+
+                  $('#CreateDeductionsettings<?php echo $employee->employee_id; ?>').click(function() {
+             var posturl = "<?php echo base_url('addDeductions/'.$employee->employee_id); ?>";
+            var form_data = $('#DeductionSettingsForm<?php echo $employee->employee_id; ?>').serialize();
+                 $.ajax({
+                     url: posturl,
+                     type: 'POST',
+                     data: form_data,
+                     dataType:"Json",
+                     success: function(data) {
+                         if (data.msg == 'YES'){
+                             $('#d-msg<?php echo $employee->employee_id; ?>').html('<div class="alert alert-success text-center">Deductions successfully updated!</div>');
+
+                             window.location.href ="<?php echo base_url('employees'); ?>";
+
+                         }
+                         else if(data.msg == 'NO'){
+                             $('#d-msg<?php echo $employee->employee_id; ?>').html('<div class="alert alert-danger text-center">Error while updating deductions! Please try again later.</div>');
+                         }
+                         else{
+                             $('#d-msg<?php echo $employee->employee_id; ?>').html('<div class="alert alert-danger">' + data.msg + '</div>');
+                         }
+                     }
+                 });
+                 return false;
+             });
                        $('#editEmployee<?php echo $employee->employee_id; ?>').click(function() {
                   var posturl = "<?php echo base_url('editemployee/'.$employee->employee_id); ?>";
                  var form_data = $('#EditEmployeeForm<?php echo $employee->employee_id; ?>').serialize();

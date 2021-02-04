@@ -157,7 +157,7 @@
                               $sub = $employee->salary+$earned+$overtime;
                               ?>
                              <td><?php echo number_format($sub, 2); ?></td>
-                             <td><?php echo $deducted+$payee+$rmadv; ?></td>
+                             <td><?php echo  number_format($deducted+$payee+$rmadv, 2); ?></td>
                              <td></td>
                             </tr>
 						</tbody>

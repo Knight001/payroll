@@ -13,6 +13,7 @@ public function get()
  return $query->result();
 }
 
+
 public function add($data)
 {
  $this->db->insert($this->table, $data);
@@ -27,12 +28,13 @@ public function getsetting($id)
 //   var_dump($query->row());die;
 }
 
-public function checksettings($id)
+public function checksettings($id, $did, $month, $year)
 {
     // var_dump($id);
-  $this->db->where('month', (int)date('m'));
-  $this->db->where('year', date('Y'));
-  $this->db->where('did', $id);
+    $this->db->where('employee', $id);
+  $this->db->where('did', $did);
+  $this->db->where('month', (int)$month);
+  $this->db->where('year', $year);
   $query = $this->db->get('settings');
   return $query->row();
 //   var_dump($query->row());die;
@@ -42,7 +44,7 @@ public function createsettings($data)
   $this->db->insert('settings', $data);
   return $this->db->insert_id();
 }
-public function getPayrollSettings($month, $year)
+public function getPayrollSettings($id, $month, $year)
 {
   if($month != ""){
     $month1 = $month;
@@ -61,6 +63,7 @@ public function getPayrollSettings($month, $year)
     $this->db->where('month', (int)$month1);
     $this->db->where('year', $year1);
     $this->db->where('status', '1');
+    $this->db->where('employee', $id);
   $query = $this->db->get('settings');
   return $query->result();
 
@@ -78,9 +81,7 @@ public function update($id, $data)
 
 public function updatesettings($id, $data)
 {
-  $this->db->where('month', (int)date('m'));
-  $this->db->where('year', date('Y'));
-  $this->db->where('did', $id);
+  $this->db->where('id', $id);
   $query = $this->db->update('settings', $data);
   if($query){
     return true;

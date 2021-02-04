@@ -38,13 +38,14 @@ public function getpayee()
  return $query->result();
 }
 
-public function getDeductions($month, $year)
+public function getDeductions($employee, $month, $year)
 {
 
     $this->db->select('TRUNCATE(SUM(amount), 2) as amount');
      $this->db->where('month', (int)$month);
      $this->db->where('year', $year);
      $this->db->where('status', '1');
+     $this->db->where('employee', $employee);
    $query = $this->db->get('settings');
    return $query->row()->amount;
 }
@@ -77,11 +78,11 @@ $this->db->select('id,position, description, TRUNCATE(amount,2) as amount, datea
  return $query->result();
 }
 
-public function check($employee)
+public function check($employee, $month, $year)
 {
  $this->db->where('employee_id', $employee);
- $this->db->where('month', date('m'));
- $this->db->where('year', date('Y'));
+ $this->db->where('month', $month);
+ $this->db->where('year', $year);
 $query = $this->db->get('payroll');
 return $query->row();
 }
